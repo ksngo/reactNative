@@ -203,7 +203,7 @@ const App: () => Node = () => {
               />
             </View>
             
-          {/* Continue with switch https://reactnative.dev/docs/components-and-apis */}
+          {/* testing Continue with switch https://reactnative.dev/docs/components-and-apis */}
           
 
           
