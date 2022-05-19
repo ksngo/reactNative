@@ -20,6 +20,8 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
+  Switch,
+  FlatList,
 } from 'react-native';
 
 import {
@@ -29,6 +31,8 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+
+import { sampleData } from './constants' ;
 
 const Section = ({children, title}): Node => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -56,17 +60,16 @@ const Section = ({children, title}): Node => {
   );
 };
 
-const Sticky = ():Node => {
-
-  const style = {
-    flexDirection: 'row',
-  }
+const Item = ({data, onPress, backgroundColor})=> {
+  
   return (
-    <View style={style}>
-      <Text>{"One"}</Text>
-      <Text>{"Two"}</Text>
-      <Text>{"Three"}</Text>
-    </View>
+    <TouchableOpacity 
+      onPress={onPress} 
+      style={{backgroundColor,margin:5}}>
+      <Text>Index: {data.index}</Text>
+      <Text>Id: {data.item?.id}</Text>
+      <Text>Title: {data.item?.title}</Text>
+    </TouchableOpacity>
   )
 }
 
@@ -75,6 +78,8 @@ const App: () => Node = () => {
   const [statusBarVisibility, setStatusBarVisibility] = useState(false)
   const [textOne, setChangeTextOne] = useState('');
   const [textTwo, setChangeTextTwo] = useState('');
+  const [switchValue, setSwitchValue] = useState(false);
+  const [selectedItemId,setSelectedItemId] = useState();
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -84,9 +89,10 @@ const App: () => Node = () => {
     scrollview: {
       backgroundColor: 'rgba(0,0,0,0.2)',
       padding: 10,
-      
+      flex:1,
     },
     contentContainerStyle: {
+      margin:2,
       backgroundColor: 'red',
       padding: 10,
     }
@@ -95,6 +101,7 @@ const App: () => Node = () => {
   const containerStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
     paddingTop: 80,
+    height: 800,
   }
 
   return (
@@ -179,7 +186,7 @@ const App: () => Node = () => {
               resizeMode={'center'}
             />
             <View 
-              style={{height:500,
+              style={{height:300,
                       margin:10,
                       borderColor: 'black',
                       borderWidth: 2,}}>
@@ -201,14 +208,32 @@ const App: () => Node = () => {
                 numberOfLines={4}
                 maxLength={40}
               />
+              <Switch 
+                onValueChange={(e)=> setSwitchValue(e)}
+                thumbColor={switchValue?'white':'yellow'}
+                trackColor={{false:'pink',true:'black'}}
+                value={switchValue}/>
             </View>
-            
-          {/* testing Continue with switch https://reactnative.dev/docs/components-and-apis */}
-          
-
-          
         </View>
       </ScrollView>
+      <View style={{backgroundColor:'pink',padding:20,flex:1}}>
+        <FlatList
+          data={sampleData}
+          keyExtractor={item => item.id}
+          renderItem={({index,item,separators}) => <Item 
+            data={{index,item,separators}} 
+            onPress={()=> {
+              setSelectedItemId(item.id);
+              separators.highlight();
+            }}
+            backgroundColor={item.id === selectedItemId ? 'green': 'white'}
+            />}
+          extraData={selectedItemId}
+          ItemSeparatorComponent={({highlighted})=> <View style={{height: 2, width: 20, backgroundColor:`${highlighted ? 'red': 'black'}`}}/>}
+        />       
+      </View>
+     {/* continue from https://reactnative.dev/docs/sectionlist */}
+      
     </SafeAreaView>
   );
 };
