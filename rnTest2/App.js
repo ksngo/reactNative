@@ -22,7 +22,10 @@ import {
   TextInput,
   Switch,
   FlatList,
+  SectionList,
 } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import {
   Colors,
@@ -32,7 +35,9 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import { sampleData } from './constants' ;
+import { sampleData, sectionListData } from './constants' ;
+
+const Stack = createNativeStackNavigator();
 
 const Section = ({children, title}): Node => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -73,7 +78,25 @@ const Item = ({data, onPress, backgroundColor})=> {
   )
 }
 
-const App: () => Node = () => {
+const App = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Home"
+          component={Home}
+          options={{title: 'welcome'}}
+        />
+        <Stack.Screen
+          name="Second"
+          component={Second}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
+}
+
+const Home: () => Node = ({ navigation }) => {
   const isDarkMode = useColorScheme() === 'dark';
   const [statusBarVisibility, setStatusBarVisibility] = useState(false)
   const [textOne, setChangeTextOne] = useState('');
@@ -214,6 +237,10 @@ const App: () => Node = () => {
                 trackColor={{false:'pink',true:'black'}}
                 value={switchValue}/>
             </View>
+            <Button
+              title="Go Second Screen"
+              onPress={()=> navigation.navigate('Second')}
+            />
         </View>
       </ScrollView>
       <View style={{backgroundColor:'pink',padding:20,flex:1}}>
@@ -237,6 +264,61 @@ const App: () => Node = () => {
     </SafeAreaView>
   );
 };
+
+const SectionListItem = ({data, onPress, backgroundColor})=> {
+  
+  return (
+    <TouchableOpacity 
+      onPress={onPress} 
+      style={{backgroundColor,margin:5}}>
+      <Text>{data}</Text>
+    </TouchableOpacity>
+  )
+}
+
+const Second = ({navigation}) => {
+
+  const [chosenData, setChosenData]=useState();
+  const [refreshing,setRefreshing]=useState(true);
+
+  const isEven = (Math.floor(Math.random()*10))%2 == 0;
+
+  const containerStyle = {
+    backgroundColor: isEven ? Colors.lighter : Colors.darker,
+  }
+
+  return (
+    <SafeAreaView style={{containerStyle}}>
+      <Button
+          title="Back to Home"
+          onPress={()=> navigation.navigate('Home')}
+        />
+      <SectionList
+        sections={sectionListData}
+        keyExtractor={(item,index)=> item+index}
+        renderItem={({index,item,section,separators})=>{
+          return (
+            <SectionListItem 
+              data={item}
+              onPress={()=> setChosenData(section.title+item+index) }
+              backgroundColor={chosenData === section.title+item+index? "green": "white"}
+            />
+          )
+        } }
+        renderSectionHeader={({section})=> (
+          <Text style={{backgroundColor:'pink', fontWeight:'bold'}}> { section.title }</Text>
+        )}
+        extraData={chosenData}
+        refreshing={refreshing}
+        onRefresh={()=> { setRefreshing(false)}}
+        ItemSeparatorComponent={({highlighted,section,})=> <View style={{height:5,backgroundColor:'rgba(0,100,0,0.1)'}}></View>}
+        SectionSeparatorComponent={({highlighted,section,})=> <View style={{height:5,backgroundColor:'rgba(0,0,100,0.3)'}}></View>}
+        stickySectionHeadersEnabled={true}
+      />
+     {/* https://reactnative.dev/docs/backhandler */}
+    </SafeAreaView>
+  )
+}
 
 const styles = StyleSheet.create({
   sectionContainer: {

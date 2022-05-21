@@ -6,3 +6,6 @@
 
  npx react-native log-android
  <!-- to run the console.log debugger -->
+
+ todo:
+ https://reactnavigation.org/docs/getting-started/
