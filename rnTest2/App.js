@@ -23,6 +23,12 @@ import {
   Switch,
   FlatList,
   SectionList,
+  TouchableHighlight,
+  Pressable,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  RefreshControl,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -103,6 +109,8 @@ const Home: () => Node = ({ navigation }) => {
   const [textTwo, setChangeTextTwo] = useState('');
   const [switchValue, setSwitchValue] = useState(false);
   const [selectedItemId,setSelectedItemId] = useState();
+  const [modalVisible, setDisplayModal] = useState(false);
+  const [scrollviewRefreshing, setScrollviewRefreshing] = useState(false);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -123,12 +131,27 @@ const Home: () => Node = ({ navigation }) => {
 
   const containerStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-    paddingTop: 80,
+    paddingTop: 0,
     height: 800,
   }
 
   return (
-    <SafeAreaView style={containerStyle}>
+    <View style={containerStyle}>
+      <Modal
+        visible={modalVisible}
+        animationType={"fade"}
+        transparent={false}
+        onRequestClose={()=> {console.log('for andrioid back button');setDisplayModal(false)}}
+        onShow={()=> console.log('onShow')}
+      >
+        <View style={{backgroundColor: "orange", flexDirection: "row"}}>
+          <View style={{flex: 1}}><Text>{String(modalVisible)}</Text></View>
+          <View style={{flex: 1}}><Text>2</Text></View>
+          <View style={{flex: 1}}><Text>3</Text></View>
+          <Button onPress={()=> {setDisplayModal(false);navigation.navigate("Second")}} title={"Go Second"}/>
+          <Button onPress={() => {setDisplayModal(false)}} title={"Back to Home"}/>
+        </View>
+      </Modal>
       <StatusBar 
         barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
         hidden={statusBarVisibility}
@@ -149,7 +172,7 @@ const Home: () => Node = ({ navigation }) => {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={styles.scrollview}
-        stickyHeaderIndices={[0]}
+        stickyHeaderIndices={[]}
         stickyHeaderHiddenOnScroll={true}
         contentOffset={{x:0, y:0}}
         decelerationRate={'normal'}
@@ -157,7 +180,20 @@ const Home: () => Node = ({ navigation }) => {
         onContentSizeChange={(e) => console.log('hello',e)}
         onMomentumScrollBegin={()=> console.log('onMomentumScrollBegin')}
         onScroll={()=>console.log('onScroll')}
-        contentContainerStyle={styles.contentContainerStyle}>
+        contentContainerStyle={styles.contentContainerStyle}
+        refreshControl={
+          <RefreshControl 
+            refreshing={scrollviewRefreshing} 
+            onRefresh={()=> {
+              setScrollviewRefreshing(true);
+              let wait = new Promise((res,rej)=> {setTimeout(res,3000)});
+              wait.then(()=> setScrollviewRefreshing(false));
+            }}
+            colors={["red","blue","brown"]}
+            progressBackgroundColor={"yellow"}
+            size={"large"}
+          />
+        }>
         
         <Header />
         <View
@@ -208,38 +244,42 @@ const Home: () => Node = ({ navigation }) => {
               resizeMethod={'resize'}
               resizeMode={'center'}
             />
-            <View 
-              style={{height:300,
-                      margin:10,
-                      borderColor: 'black',
-                      borderWidth: 2,}}>
-              <Text>{textOne}</Text>
-              <TextInput
-                style={{backgroundColor:'lightgrey'}}
-                onChangeText={setChangeTextOne}
-                value={textOne}
-                autoCapitalize={'sentences'}
-                textAlign={'center'}
-                underlineColorAndroid={'green'}
-              />
-              <Text>{textTwo}</Text>
-              <TextInput
-                style={{  margin: 12, borderWidth: 5, padding: 10, backgroundColor:'darkgrey' }}
-                onChangeText={setChangeTextTwo}
-                value={textTwo}
-                multiline
-                numberOfLines={4}
-                maxLength={40}
-              />
-              <Switch 
-                onValueChange={(e)=> setSwitchValue(e)}
-                thumbColor={switchValue?'white':'yellow'}
-                trackColor={{false:'pink',true:'black'}}
-                value={switchValue}/>
-            </View>
+            <KeyboardAvoidingView 
+              behavior={"height"}
+            >
+              <View 
+                style={{height:300,
+                        margin:10,
+                        borderColor: 'black',
+                        borderWidth: 2,}}>
+                <Text>{textOne}</Text>
+                <TextInput
+                  style={{backgroundColor:'lightgrey'}}
+                  onChangeText={setChangeTextOne}
+                  value={textOne}
+                  autoCapitalize={'sentences'}
+                  textAlign={'center'}
+                  underlineColorAndroid={'green'}
+                />
+                <Text>{textTwo}</Text>
+                <TextInput
+                  style={{  margin: 12, borderWidth: 5, padding: 10, backgroundColor:'darkgrey' }}
+                  onChangeText={setChangeTextTwo}
+                  value={textTwo}
+                  multiline
+                  numberOfLines={4}
+                  maxLength={40}
+                />
+                <Switch 
+                  onValueChange={(e)=> setSwitchValue(e)}
+                  thumbColor={switchValue?'white':'yellow'}
+                  trackColor={{false:'pink',true:'black'}}
+                  value={switchValue}/>
+              </View>
+            </KeyboardAvoidingView>
             <Button
-              title="Go Second Screen"
-              onPress={()=> navigation.navigate('Second')}
+              title={"Go Second Page? modal status :"+String(modalVisible)}
+              onPress={()=> {setDisplayModal(!modalVisible)}}
             />
         </View>
       </ScrollView>
@@ -259,9 +299,7 @@ const Home: () => Node = ({ navigation }) => {
           ItemSeparatorComponent={({highlighted})=> <View style={{height: 2, width: 20, backgroundColor:`${highlighted ? 'red': 'black'}`}}/>}
         />       
       </View>
-     {/* continue from https://reactnative.dev/docs/sectionlist */}
-      
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -280,6 +318,7 @@ const Second = ({navigation}) => {
 
   const [chosenData, setChosenData]=useState();
   const [refreshing,setRefreshing]=useState(true);
+  const [pressableState, setPressableState]= useState();
 
   const isEven = (Math.floor(Math.random()*10))%2 == 0;
 
@@ -293,6 +332,38 @@ const Second = ({navigation}) => {
           title="Back to Home"
           onPress={()=> navigation.navigate('Home')}
         />
+      <TouchableHighlight
+        onPress={()=> navigation.navigate('Home')}
+        activeOpacity={0}
+        underlayColor={'green'}
+      >
+        <View>
+          <Text>TouchableHighlight 'back to home'</Text>
+        </View>
+      </TouchableHighlight>
+      <TouchableOpacity
+        activeOpacity={0}
+      >
+       <View>
+          <Text>TouchableOpacity 'back to home'</Text>
+        </View>
+      </TouchableOpacity>
+      <Pressable
+        onPressIn={()=> setPressableState("onPressIn") }
+        onPressOut={()=> setPressableState("onPressOut") }
+        onPress={() => setPressableState("onPress")}
+        onLongPress={() =>setPressableState("onLongPress")}
+      >
+        {(props) => {
+          console.log('322props',props); // {pressed : false}
+          return (
+          <View style={{backgroundColor: `${props.pressed ? 'grey' : 'lightgrey'}`}}>
+            <Text>Pressable state {pressableState}</Text>
+            <ActivityIndicator />
+          </View>
+          )
+        }}
+      </Pressable>
       <SectionList
         sections={sectionListData}
         keyExtractor={(item,index)=> item+index}

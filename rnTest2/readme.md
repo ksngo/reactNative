@@ -9,3 +9,6 @@
 
  todo:
  https://reactnavigation.org/docs/getting-started/
+
+Continue:
+ https://reactnative.dev/docs/drawerlayoutandroid
