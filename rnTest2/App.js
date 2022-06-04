@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import type {Node} from 'react';
 import {
   SafeAreaView,
@@ -29,6 +29,10 @@ import {
   KeyboardAvoidingView,
   Modal,
   RefreshControl,
+  BackHandler,
+  Alert,
+  DrawerLayoutAndroid,
+  TouchableNativeFeedback,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -319,6 +323,9 @@ const Second = ({navigation}) => {
   const [chosenData, setChosenData]=useState();
   const [refreshing,setRefreshing]=useState(true);
   const [pressableState, setPressableState]= useState();
+  const [rippleColor, setRippleColor]=useState();
+  const [rippleOverflow, setRippleOverflow]=useState(false);
+  const drawerRef=useRef();
 
   const isEven = (Math.floor(Math.random()*10))%2 == 0;
 
@@ -326,8 +333,47 @@ const Second = ({navigation}) => {
     backgroundColor: isEven ? Colors.lighter : Colors.darker,
   }
 
+  useEffect(()=> {
+
+  },[])
+
+  useEffect(()=> {
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", ()=> {
+      Alert.alert("Alert","This is an alert because you trigger backhandler", [
+        {
+          text: "Cancel", 
+          onPress: ()=> null, 
+          style: "cancel"
+        },
+        {text: "Yes", onPress: ()=> { Alert.alert("You press yes")}}
+      ]);
+      return true;
+    })
+
+    return ()=> backHandler.remove();
+  }, [])
+
   return (
+    <DrawerLayoutAndroid
+      ref={drawerRef}
+      drawerWidth={200}
+      drawerPosition={'left'}
+      renderNavigationView={()=> (
+        <View>
+          <Text>Drawer</Text>
+          <Button
+            title="Close Drawer"
+            onPress={()=> drawerRef.current.closeDrawer()}
+          />
+        </View>
+      )}
+      
+    >
     <SafeAreaView style={{containerStyle}}>
+      <Button
+        title="open drawer"
+        onPress={()=> drawerRef.current.openDrawer()}
+      />
       <Button
           title="Back to Home"
           onPress={()=> navigation.navigate('Home')}
@@ -348,6 +394,18 @@ const Second = ({navigation}) => {
           <Text>TouchableOpacity 'back to home'</Text>
         </View>
       </TouchableOpacity>
+      <TouchableNativeFeedback
+        onPress={()=> {
+          const randomColor = "#000000".replace(/0/g, ()=> Math.floor((Math.random()*16)).toString(16));
+          setRippleColor(randomColor);
+          setRippleOverflow(!rippleOverflow);
+        }}
+        background={TouchableNativeFeedback.Ripple(rippleColor,rippleOverflow)}
+      >
+        <View style={{borderColor: 'black', borderWidth:1, height:40, backgroundColor:"#999999"}}>
+          <Text>TouchableNativeFeedback with Ripple</Text>
+        </View>
+      </TouchableNativeFeedback>
       <Pressable
         onPressIn={()=> setPressableState("onPressIn") }
         onPressOut={()=> setPressableState("onPressOut") }
@@ -388,6 +446,7 @@ const Second = ({navigation}) => {
       />
      {/* https://reactnative.dev/docs/backhandler */}
     </SafeAreaView>
+    </DrawerLayoutAndroid>
   )
 }
 

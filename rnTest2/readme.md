@@ -12,3 +12,6 @@
 
 Continue:
  https://reactnative.dev/docs/drawerlayoutandroid
+
+//debugger
+ http://localhost:8081/debugger-ui/
