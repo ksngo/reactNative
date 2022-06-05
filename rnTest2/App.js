@@ -33,6 +33,7 @@ import {
   Alert,
   DrawerLayoutAndroid,
   TouchableNativeFeedback,
+  Animated,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -353,6 +354,33 @@ const Second = ({navigation}) => {
     return ()=> backHandler.remove();
   }, [])
 
+  //animation--
+
+  const animOpacity = useRef(new Animated.Value(0)).current;
+
+  const fadeIn = () => {
+    Animated.timing(animOpacity, {
+      toValue: 1,
+      duration: 5000,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  const fadeOut =()=> {
+    Animated.timing(animOpacity, {
+      toValue: 0,
+      duration: 5000,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  useEffect(()=> {
+    fadeIn();
+  },[])
+
+
+  //--
+
   return (
     <DrawerLayoutAndroid
       ref={drawerRef}
@@ -422,6 +450,12 @@ const Second = ({navigation}) => {
           )
         }}
       </Pressable>
+      <Animated.View style={{backgroundColor: 'powderblue', opacity: animOpacity, flexDirection:'row'}}>
+          <Text style={{flex:3}}>This is animated text</Text>
+          <Button title="fade out" style={{flex:1}} onPress={fadeOut}/>
+          <Text>{" "}</Text>
+          <Button title="fade in" style={{flex:1}} onPress={fadeIn}/>
+      </Animated.View>
       <SectionList
         sections={sectionListData}
         keyExtractor={(item,index)=> item+index}

@@ -17,4 +17,5 @@ Continue:
  http://localhost:8081/debugger-ui/
 
 continue:
- https://reactnative.dev/docs/accessibilityinfo
+ 
+ https://reactnative.dev/docs/appearance
