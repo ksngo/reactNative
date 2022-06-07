@@ -18,4 +18,4 @@ Continue:
 
 continue:
  
- https://reactnative.dev/docs/appearance
+ https://reactnative.dev/docs/layoutanimation

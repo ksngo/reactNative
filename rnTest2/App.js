@@ -34,6 +34,10 @@ import {
   DrawerLayoutAndroid,
   TouchableNativeFeedback,
   Animated,
+  Dimensions,
+  Easing,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -47,6 +51,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 import { sampleData, sectionListData } from './constants' ;
+
 
 const Stack = createNativeStackNavigator();
 
@@ -319,6 +324,14 @@ const SectionListItem = ({data, onPress, backgroundColor})=> {
   )
 }
 
+//if want to use LayoutAnimation in Android--
+if (Platform.OS === 'android') {
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+}
+//--
+
 const Second = ({navigation}) => {
 
   const [chosenData, setChosenData]=useState();
@@ -326,6 +339,8 @@ const Second = ({navigation}) => {
   const [pressableState, setPressableState]= useState();
   const [rippleColor, setRippleColor]=useState();
   const [rippleOverflow, setRippleOverflow]=useState(false);
+  const [dimension, setDimensions] = useState({ window: Dimensions.get("window"), screen: Dimensions.get("screen")})
+  const [layoutAnimatedState, setLayoutAnimatedState] = useState(false);
   const drawerRef=useRef();
 
   const isEven = (Math.floor(Math.random()*10))%2 == 0;
@@ -363,6 +378,7 @@ const Second = ({navigation}) => {
       toValue: 1,
       duration: 5000,
       useNativeDriver: true,
+      easing: Easing.bounce,
     }).start();
   }
 
@@ -371,6 +387,7 @@ const Second = ({navigation}) => {
       toValue: 0,
       duration: 5000,
       useNativeDriver: true,
+      easing: Easing.quad,
     }).start();
   }
 
@@ -451,11 +468,30 @@ const Second = ({navigation}) => {
         }}
       </Pressable>
       <Animated.View style={{backgroundColor: 'powderblue', opacity: animOpacity, flexDirection:'row'}}>
-          <Text style={{flex:3}}>This is animated text</Text>
+          <Text style={{flex:3}}>
+            Animated.View tag for view to be animated; 
+            Animated.Value to set initial animation e.g. opacity value; 
+            Animated.timing to change animation state to another value; 
+            the reference Animated.Value is passed inside Animated.View tag's style attributes
+          </Text>
           <Button title="fade out" style={{flex:1}} onPress={fadeOut}/>
           <Text>{" "}</Text>
           <Button title="fade in" style={{flex:1}} onPress={fadeIn}/>
       </Animated.View>
+      <Text>Window</Text>
+      {Object.entries(dimension.window).map(i=> <Text> {i[0]}-{i[1]}</Text>)} 
+      {/* <Text>Screen</Text>
+      {Object.entries(dimension.screen).map(([key,value])=> <Text> {key}-{value}</Text>)}  */}
+      {layoutAnimatedState &&  <Text> This is animated via LayoutAnimation </Text>}
+      <Button 
+        onPress={()=> {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+        //by setting layoutAnimation configNext before set state,
+        //the view dependent on the state will be animated automatically when layout changes due to state changes.
+        setLayoutAnimatedState(!layoutAnimatedState);
+        }} 
+        title="Toggle layoutAnimatedState"
+      />
       <SectionList
         sections={sectionListData}
         keyExtractor={(item,index)=> item+index}
