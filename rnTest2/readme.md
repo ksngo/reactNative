@@ -18,4 +18,7 @@ Continue:
 
 continue:
  
- https://reactnative.dev/docs/layoutanimation
+ https://reactnative.dev/docs/roottag
+ 
+Dont Understand:
+1. PanResponder

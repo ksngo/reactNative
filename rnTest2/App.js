@@ -38,6 +38,9 @@ import {
   Easing,
   LayoutAnimation,
   UIManager,
+  Linking,
+  PixelRatio,
+  Platform,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -106,6 +109,10 @@ const App = () => {
         <Stack.Screen
           name="Second"
           component={Second}
+        />
+        <Stack.Screen
+          name="Third"
+          component={Third}
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -290,6 +297,10 @@ const Home: () => Node = ({ navigation }) => {
             <Button
               title={"Go Second Page? modal status :"+String(modalVisible)}
               onPress={()=> {setDisplayModal(!modalVisible)}}
+            />
+            <Button
+              title="Go Third Page?"
+              onPress={()=> {navigation.navigate("Third")}}
             />
         </View>
       </ScrollView>
@@ -479,13 +490,24 @@ const Second = ({navigation}) => {
           <Button title="fade in" style={{flex:1}} onPress={fadeIn}/>
       </Animated.View>
       <Text>Window</Text>
-      {Object.entries(dimension.window).map(i=> <Text> {i[0]}-{i[1]}</Text>)} 
+      {Object.entries(dimension.window).map(i=> <Text key={`dimensionWindow-${i[0]}`}> {i[0]}-{i[1]}</Text>)} 
       {/* <Text>Screen</Text>
       {Object.entries(dimension.screen).map(([key,value])=> <Text> {key}-{value}</Text>)}  */}
       {layoutAnimatedState &&  <Text> This is animated via LayoutAnimation </Text>}
       <Button 
         onPress={()=> {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+          LayoutAnimation.configureNext({
+            duration: 300,
+            create: 
+            {
+               type: LayoutAnimation.Types.easeInEaseOut,
+               property: LayoutAnimation.Properties.opacity,
+            },
+            update: 
+            {
+               type: LayoutAnimation.Types.easeInEaseOut,
+            }
+           });
         //by setting layoutAnimation configNext before set state,
         //the view dependent on the state will be animated automatically when layout changes due to state changes.
         setLayoutAnimatedState(!layoutAnimatedState);
@@ -518,6 +540,73 @@ const Second = ({navigation}) => {
     </SafeAreaView>
     </DrawerLayoutAndroid>
   )
+}
+
+const Third = ({navigation})=> {
+
+  const [initialUrl, setInitialUrl] = useState('processing');
+
+  const handleOpenUrl = async ()=> {
+
+    const url = "https://google.com"
+    const isSupportedUrl = await Linking.canOpenURL(url);
+    console.log('isSupportedUrl',isSupportedUrl)
+    await Linking.openURL(url);
+    if(isSupportedUrl) {
+      await Linking.openURL(url);
+    }
+  }
+
+  const handleOpenSetting = async () => {
+    await Linking.openSettings();
+  }
+
+  const handleRunGetInitialUrl = async ()=> {
+    const theInitialUrl = await Linking.getInitialURL();
+    setInitialUrl(theInitialUrl);
+  }
+
+  return <ScrollView>
+    <Button
+      title="Back to Home"
+      onPress={() => { navigation.navigate("Home") }}
+    />
+    <Text> Linking props: canOpenUrl , openUrl</Text>
+    <Button title='open url' onPress={handleOpenUrl} />
+    <Text> Linking props: openSettings</Text>
+    <Button title='open setting' onPress={handleOpenSetting} />
+    <Text> Linking props: getInitialUrl</Text>
+    <Text> The InitialUrl is {initialUrl}</Text>
+    <Button title='Run getInitialUrl' onPress={handleRunGetInitialUrl} />
+    <Text> Linking props: sendIntent</Text>
+    <Button title='sendIntent on android.intent.action.POWER_USAGE_SUMMARY' onPress={async () => {
+      try {
+        await Linking.sendIntent('android.intent.action.POWER_USAGE_SUMMARY')
+      } catch(e) {
+        Alert.alert(e.message)
+      }
+    }} />
+    <Button title='sendIntent on android.settings.APP_NOTIFICATION_SETTINGS' onPress={async () => {
+      try {
+        await Linking.sendIntent('android.settings.APP_NOTIFICATION_SETTINGS', 
+        [{"android.provider.extra.APP_PACKAGE": "com.facebook.katana" }])
+      } catch(e) {
+        Alert.alert(e.message)
+      }
+    }} />
+    <View style={{flexDirection: 'row'}}>
+      <Image
+        source={require('./images/milk.jpg')}
+        style={{ height: 100, width: 50}}
+      />
+      <Text style={{flex:1}}>getPixelSizeForLayout Height Size (100): {PixelRatio.getPixelSizeForLayoutSize(100)}</Text>
+      <Text style={{flex:1}}>getPixelSizeForLayout Width Size (50): {PixelRatio.getPixelSizeForLayoutSize(50)}</Text>
+    </View>
+    <Text>Platform.constants</Text>
+    <Text>{JSON.stringify(Platform.constants, null, 10) }</Text>
+   
+    
+  </ScrollView>
 }
 
 const styles = StyleSheet.create({
