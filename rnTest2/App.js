@@ -41,6 +41,10 @@ import {
   Linking,
   PixelRatio,
   Platform,
+  Share,
+  Vibration,
+  PermissionsAndroid,
+  ToastAndroid,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -602,10 +606,42 @@ const Third = ({navigation})=> {
       <Text style={{flex:1}}>getPixelSizeForLayout Height Size (100): {PixelRatio.getPixelSizeForLayoutSize(100)}</Text>
       <Text style={{flex:1}}>getPixelSizeForLayout Width Size (50): {PixelRatio.getPixelSizeForLayoutSize(50)}</Text>
     </View>
-    <Text>Platform.constants</Text>
+    <Text style={{borderBottomColor: 'red', borderBottomWidth: StyleSheet.hairlineWidth}}>Platform.constants</Text>
     <Text>{JSON.stringify(Platform.constants, null, 10) }</Text>
-   
-    
+    <Button onPress={ async ()=> {
+      try {
+        const result = await Share.share({
+          message: 'share message',
+          title: 'share title'
+        }, {dialogTitle: 'share dialogTitle'})
+        console.log('result.action',result.action)
+        console.log('Share.sharedAction',Share.sharedAction)
+        console.log('Share.dismissedAction',Share.dismissedAction)
+        console.log('result.activityType',result.activityType)
+      } catch(err) {
+        Alert.alert('err.message')
+      }
+    }} title='Open Share'/>
+    <Button title='Vibrate(not vibrating)' onPress={()=> {Vibration.vibrate()}} />
+    <Button title='PermissionsAndroid(not showing persmission modal)' onPress={async ()=> {
+      try {
+        const checkPermission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {title:' title', 
+          message: 'message', 
+          buttonNeutral:'btn neutral', 
+          buttonNegative:'btn negative', 
+          buttonPositive:'btn positive'})
+
+        console.log('checkPermission',checkPermission)
+        console.log('PermissionsAndroid.RESULTS.GRANTED',PermissionsAndroid.RESULTS.GRANTED)
+      } catch(err) {
+        alert(err.message)
+      }
+    }}/>
+    <Button title='ToasTAndroid(not working)' onPress={()=> {
+     ToastAndroid.show("what a toast", ToastAndroid.SHORT)
+    }}/>
   </ScrollView>
 }
 

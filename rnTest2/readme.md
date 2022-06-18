@@ -19,6 +19,8 @@ Continue:
 continue:
  
  https://reactnative.dev/docs/roottag
- 
+
 Dont Understand:
 1. PanResponder
+2. RootTag
+3. Systrace
